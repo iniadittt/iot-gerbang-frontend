@@ -128,7 +128,7 @@ export default function Dashboard() {
 					<CardHeader>
 						<CardDescription>Status Gerbang Terakhir</CardDescription>
 						<div className="flex justify-between">
-							<CardTitle className="text-2xl font-semibold tabular-nums @[250px]/card:text-3xl capitalize">{data?.current?.status || "Loading"}</CardTitle>
+							<CardTitle className="text-2xl font-semibold tabular-nums @[250px]/card:text-3xl capitalize">{data?.current?.status || "-"}</CardTitle>
 							{data?.current?.status === "Terbuka" ? <DoorOpen className="size-8 mr-4" /> : data?.current?.status === "Tertutup" ? <DoorClosed className="size-8 mr-4" /> : null}
 						</div>
 					</CardHeader>
@@ -144,7 +144,7 @@ export default function Dashboard() {
 										minute: "2-digit",
 										second: "2-digit",
 								  })} WIB`
-								: "Loading"}
+								: "-"}
 						</div>
 					</CardFooter>
 				</Card>
@@ -152,11 +152,11 @@ export default function Dashboard() {
 				<Card className="@container/card border-border divide-border bg-background rounded-lg shadow">
 					<CardHeader>
 						<CardDescription>Status Orang Terakhir</CardDescription>
-						<CardTitle className="text-2xl font-semibold tabular-nums @[250px]/card:text-3xl capitalize">{data?.current?.user?.fullname || "Loading"}</CardTitle>
+						<CardTitle className="text-2xl font-semibold tabular-nums @[250px]/card:text-3xl capitalize">{data?.current?.user?.fullname || "-"}</CardTitle>
 					</CardHeader>
 					<CardFooter className="flex-col items-start text-md">
 						<div className="text-muted-foreground">ID RFID</div>
-						<div className="line-clamp-1 flex gap-2 font-semibold">{data?.current?.user?.rfid || "Loading"}</div>
+						<div className="line-clamp-1 flex gap-2 font-semibold">{data?.current?.user?.rfid || "-"}</div>
 					</CardFooter>
 				</Card>
 			</div>
@@ -180,10 +180,10 @@ export default function Dashboard() {
 								>
 									<div className="flex w-full items-center justify-start p-[20px] sm:w-16 sm:justify-center sm:py-4">
 										{item?.status === "Terbuka" ? <DoorOpen className="size-8" /> : item?.status === "Tertutup" ? <DoorClosed className="size-8" /> : null}
-										<span className="ml-3 text-base font-medium sm:hidden">{item?.status ?? "Loading"}</span>
+										<span className="ml-3 text-base font-medium sm:hidden">{item?.status ?? "-"}</span>
 									</div>
 									<div className="w-full flex-1 px-6 pb-2 sm:py-4">
-										<div className="hidden font-medium sm:block">{item?.status ?? "Loading"}</div>
+										<div className="hidden font-medium sm:block">{item?.status ?? "-"}</div>
 									</div>
 									<div className="w-full flex-1 px-6 pb-2 sm:py-4">
 										<span className="mr-1 text-muted-foreground inline-block sm:hidden">Waktu:</span>
@@ -197,17 +197,17 @@ export default function Dashboard() {
 														minute: "2-digit",
 														second: "2-digit",
 												  })} WIB`
-												: "Loading"}
+												: "-"}
 										</span>
 									</div>
 
 									<div className="w-full flex-1 px-6 pb-2 sm:py-4">
 										<span className="mr-1 text-muted-foreground inline-block sm:hidden">Oleh:</span>
-										<span className="font-semibold sm:font-normal">{item?.user?.fullname ?? "Loading"}</span>
+										<span className="font-semibold sm:font-normal">{item?.user?.fullname ?? "-"}</span>
 									</div>
 									<div className="w-full flex-1 px-6 pb-2 sm:py-4">
 										<span className="mr-1 text-muted-foreground inline-block sm:hidden">RFID:</span>
-										<span className="font-semibold sm:font-normal">{item?.user?.rfid ?? "Loading"}</span>
+										<span className="font-semibold sm:font-normal">{item?.user?.rfid ?? "-"}</span>
 									</div>
 								</div>
 							))}
