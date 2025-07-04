@@ -1,4 +1,4 @@
-export const BACKEND_URL = "http://144.126.241.11:9000";
+export const BACKEND_URL = "http://144.126.241.11:9004";
 
 export const APPLICATION = {
 	title: "IOT Gerbang TK",
