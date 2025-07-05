@@ -6,6 +6,11 @@ import { Button } from "~/components/ui/button";
 import { Card, CardDescription, CardFooter, CardHeader, CardTitle } from "~/components/ui/card";
 import { APP_ROUTES, APPLICATION, BACKEND_URL } from "~/constant/setting";
 import { useUser } from "~/hooks/useUser";
+import { io } from "socket.io-client";
+
+const socket = io(BACKEND_URL, {
+	transports: ["websocket"],
+});
 
 export default function Dashboard() {
 	const navigate = useNavigate();
@@ -74,6 +79,25 @@ export default function Dashboard() {
 			navigate(APP_ROUTES.login);
 		}
 		getData();
+
+		if (socket) {
+			socket.on("sensor", (data) => {
+				const sorted = [...data].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+				const lifetime = sorted;
+				const current = sorted[0];
+				setData((prev) => ({
+					...prev,
+					current,
+					lifetime,
+				}));
+			});
+		}
+
+		return () => {
+			if (socket) {
+				socket.off("sensor");
+			}
+		};
 	}, [navigate, authenticated, loading]);
 
 	if (loading || isLoading) {
