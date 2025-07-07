@@ -7,6 +7,7 @@ import { Card, CardDescription, CardFooter, CardHeader, CardTitle } from "~/comp
 import { APP_ROUTES, APPLICATION, BACKEND_URL } from "~/constant/setting";
 import { useUser } from "~/hooks/useUser";
 import { io } from "socket.io-client";
+import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from "~/components/ui/select";
 
 const socket = io(BACKEND_URL, {
 	transports: ["websocket"],
@@ -23,6 +24,15 @@ export default function Dashboard() {
 	}>({
 		current: null,
 		lifetime: null,
+	});
+	const [pdf, setPdf] = useState<{
+		status: string | null;
+		bulan: number | null;
+		tahun: number | null;
+	}>({
+		status: null,
+		bulan: null,
+		tahun: null,
 	});
 
 	const getData = async () => {
@@ -104,6 +114,62 @@ export default function Dashboard() {
 		return <PageLoading />;
 	}
 
+	const handlerPdf = async (event: React.FormEvent) => {
+		event.preventDefault();
+		try {
+			setIsLoading(true);
+			const token = localStorage.getItem("token");
+			console.log({ token });
+
+			const response = await fetch(`${BACKEND_URL}/pdf`, {
+				method: "POST",
+				headers: {
+					"Content-Type": "application/json",
+					Authorization: `Bearer ${token}`,
+				},
+				body: JSON.stringify(pdf),
+			});
+			console.log({ response });
+
+			const result = await response.json();
+			console.log({ result });
+
+			if (!response.ok || !result.success) {
+				console.error("Request failed:", result);
+				return;
+			}
+
+			let base64 = result.data.base64;
+
+			if (base64.startsWith("data:application/pdf;base64,")) {
+				base64 = base64.replace("data:application/pdf;base64,", "");
+			}
+
+			const byteCharacters = atob(base64);
+			const byteNumbers = new Array(byteCharacters.length).fill(0).map((_, i) => byteCharacters.charCodeAt(i));
+			const byteArray = new Uint8Array(byteNumbers);
+			const blob = new Blob([byteArray], { type: "application/pdf" });
+			const blobUrl = URL.createObjectURL(blob);
+			const link = document.createElement("a");
+			link.href = blobUrl;
+			link.download = result.data.filename;
+			document.body.appendChild(link);
+			link.click();
+			document.body.removeChild(link);
+			URL.revokeObjectURL(blobUrl);
+
+			setPdf({
+				status: null,
+				bulan: null,
+				tahun: null,
+			});
+		} catch (error: any) {
+			console.error(`Terjadi kesalahan: ${error.message}`);
+		} finally {
+			setIsLoading(false);
+		}
+	};
+
 	const handlerLogout = async (event: React.FormEvent) => {
 		event.preventDefault();
 		localStorage.removeItem("token");
@@ -136,8 +202,9 @@ export default function Dashboard() {
 								className="bg-red-600 hover:bg-red-600/90"
 							>
 								<Button
-									className="cursor-pointer"
 									onClick={handlerLogout}
+									className="cursor-pointer"
+									disabled={isLoading}
 								>
 									Keluar
 								</Button>
@@ -157,7 +224,7 @@ export default function Dashboard() {
 						</div>
 					</CardHeader>
 					<CardFooter className="flex-col items-start text-md">
-						<div className="text-muted-foreground">Dilakukan pada</div>
+						<div className="text-muted-foreground">{data?.current?.status === "Terbuka" ? "Dibuka pada" : data?.current?.status === "Tertutup" ? "Ditutup pada" : null}</div>
 						<div className="line-clamp-1 flex gap-2 font-semibold">
 							{data?.current?.createdAt
 								? `${new Date(data.current.createdAt).toLocaleString("id-ID", {
@@ -175,7 +242,7 @@ export default function Dashboard() {
 
 				<Card className="@container/card border-border divide-border bg-background rounded-lg shadow">
 					<CardHeader>
-						<CardDescription>Status Orang Terakhir</CardDescription>
+						<CardDescription>Ibu Guru</CardDescription>
 						<CardTitle className="text-2xl font-semibold tabular-nums @[250px]/card:text-3xl capitalize">{data?.current?.user?.fullname || "-"}</CardTitle>
 					</CardHeader>
 					<CardFooter className="flex-col items-start text-md">
@@ -183,6 +250,100 @@ export default function Dashboard() {
 						<div className="line-clamp-1 flex gap-2 font-semibold">{data?.current?.user?.rfid || "-"}</div>
 					</CardFooter>
 				</Card>
+			</div>
+
+			<div>
+				<div className="container mx-auto px-4">
+					<div className="bg-white p-4 border-border divide-border rounded-lg shadow mt-6 grid grid-cols-1 xl:grid-cols-4 gap-4">
+						<Select onValueChange={(value) => setPdf((prev) => ({ ...prev, status: value }))}>
+							<SelectTrigger
+								className="w-full"
+								onChange={(event) => console.log({ event })}
+							>
+								<SelectValue placeholder="Pilih Status" />
+							</SelectTrigger>
+							<SelectContent>
+								<SelectGroup>
+									<SelectLabel>Status</SelectLabel>
+									{[
+										{ label: "Semua", value: "semua" },
+										{ label: "Terbuka", value: "terbuka" },
+										{ label: "Tertutup", value: "tertutup" },
+									].map((item, index) => (
+										<SelectItem
+											key={index}
+											value={item.value.toString()}
+										>
+											{item.label}
+										</SelectItem>
+									))}
+								</SelectGroup>
+							</SelectContent>
+						</Select>
+
+						<Select onValueChange={(value) => setPdf((prev) => ({ ...prev, bulan: parseInt(value) }))}>
+							<SelectTrigger className="w-full">
+								<SelectValue placeholder="Pilih Bulan" />
+							</SelectTrigger>
+							<SelectContent>
+								<SelectGroup>
+									<SelectLabel>Bulan</SelectLabel>
+									{[
+										{ label: "Januari", value: 1 },
+										{ label: "Februari", value: 2 },
+										{ label: "Maret", value: 3 },
+										{ label: "April", value: 4 },
+										{ label: "Mei", value: 5 },
+										{ label: "Juni", value: 6 },
+										{ label: "Juli", value: 7 },
+										{ label: "Agustus", value: 8 },
+										{ label: "September", value: 9 },
+										{ label: "Oktober", value: 10 },
+										{ label: "November", value: 11 },
+										{ label: "Desember", value: 12 },
+									].map((item, index) => (
+										<SelectItem
+											key={index}
+											value={item.value.toString()}
+										>
+											{item.label}
+										</SelectItem>
+									))}
+								</SelectGroup>
+							</SelectContent>
+						</Select>
+
+						<Select onValueChange={(value) => setPdf((prev) => ({ ...prev, tahun: parseInt(value) }))}>
+							<SelectTrigger className="w-full">
+								<SelectValue placeholder="Pilih Tahun" />
+							</SelectTrigger>
+							<SelectContent>
+								<SelectGroup>
+									<SelectLabel>Tahun</SelectLabel>
+									{Array.from({ length: 11 }, (_, i) => {
+										const year = new Date().getFullYear() - i;
+										return (
+											<SelectItem
+												key={year}
+												value={year.toString()}
+											>
+												{year}
+											</SelectItem>
+										);
+									})}
+								</SelectGroup>
+							</SelectContent>
+						</Select>
+
+						<Button
+							onClick={handlerPdf}
+							className="bg-green-600 hover:bg-green-600/90 cursor-pointer disabled:bg-gray-600"
+							disabled={isLoading || !pdf.status || !pdf.bulan || !pdf.tahun}
+						>
+							Download PDF
+						</Button>
+					</div>
+				</div>
 			</div>
 
 			<div>
