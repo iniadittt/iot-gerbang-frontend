@@ -119,7 +119,6 @@ export default function Dashboard() {
 		try {
 			setIsLoading(true);
 			const token = localStorage.getItem("token");
-			console.log({ token });
 
 			const response = await fetch(`${BACKEND_URL}/pdf`, {
 				method: "POST",
@@ -129,10 +128,8 @@ export default function Dashboard() {
 				},
 				body: JSON.stringify(pdf),
 			});
-			console.log({ response });
 
 			const result = await response.json();
-			console.log({ result });
 
 			if (!response.ok || !result.success) {
 				console.error("Request failed:", result);
@@ -183,12 +180,15 @@ export default function Dashboard() {
 				<div className="container mx-auto">
 					<nav className="flex justify-between">
 						<div className="flex items-center gap-6">
-							<a className="flex items-center gap-2">
+							<a
+								href={APP_ROUTES.dashboard}
+								className="flex items-center gap-2"
+							>
 								<img className="max-h-8" />
 								<span className="text-lg font-semibold tracking-tighter">{APPLICATION.title}</span>
 							</a>
 						</div>
-						<div className="flex gap-6">
+						<div className="flex gap-2 items-center">
 							<h1>
 								{user && (
 									<>
@@ -196,18 +196,26 @@ export default function Dashboard() {
 									</>
 								)}
 							</h1>
-							<Button
-								asChild
-								size="sm"
-								className="bg-red-600 hover:bg-red-600/90"
-							>
+							<a href="/register"></a>
+							{user && user.username === "admin" && (
 								<Button
-									onClick={handlerLogout}
-									className="cursor-pointer"
-									disabled={isLoading}
+									size="sm"
+									className="bg-green-600 hover:bg-green-600/80 cursor-pointer"
+									onClick={(event) => {
+										event.preventDefault();
+										window.location.href = APP_ROUTES.admin;
+									}}
 								>
-									Keluar
+									Pengguna
 								</Button>
+							)}
+							<Button
+								size="sm"
+								className="bg-red-600 hover:bg-red-600/80 cursor-pointer"
+								onClick={handlerLogout}
+								disabled={isLoading}
+							>
+								Keluar
 							</Button>
 						</div>
 					</nav>
